@@ -1,20 +1,51 @@
-# Assignment 1
-**Student:** Adilbek Zhetpyspayev  
-**Group:** SE-2406
+ AP2 Assignment 2 - gRPC Migration & Contract-First Development
 
-## Architecture Decisions
-**Clean Architecture**: Each service is divided into Domain, UseCase, Repository, and Transport layers to ensure Separation of Concerns
-- Microservices Principles:
-    - Database per Service: Order Service and Payment Service use separate PostgreSQL databases 
-    - No Shared Code: Services are fully decoupled. Domain models are duplicated to avoid "Distributed Monolith"
-- Manual Dependency Injection: All dependencies are initialized in the Composition Root
+* **Name:** Adilbek Zhetpyspayev
+* **Group:** SE-2406
 
-## Failure Handling
-- Resilient Communication: The Order Service uses a custom http.Client with a 2-second timeout when calling the Payment Service
-- Graceful Degradation: If the Payment Service is unavailable, the Order Service returns a 503 Service Unavailable error and marks the order status as "Failed" to maintain consistency
+## Contract-First Flow & Repositories
+As per the assignment requirements, the Protocol Buffers are managed remotely using a Contract-First approach.The automated generation pipeline is set up via GitHub Actions
 
-## How to Run
-1. Create orders_db and payments_db in PostgreSQL.
-2. Run SQL scripts from /migrations in respective databases.
-3. Start Payment Service: cd payment-service && go run cmd/payment/main.go
-4. Start Order Service: cd order-service && go run cmd/order/main.go
+* **Protos Repository (Contracts):** https://github.com/Adilbek2006/protos
+* **Generated Code Repository (CI/CD):** https://github.com/Adilbek2006/grpc-generated
+* **Main Services Repository (Git History):** https://github.com/Adilbek2006/Assignment2_AP2
+
+## Project Structure
+* `order-service/`: Exposes REST API for users, acts as a gRPC Client to communicate with Payment Service, and acts as a gRPC Server for Server-side Streaming
+* `payment-service/`: Acts as a gRPC Server handling payment processing
+* `test-client/`: A console gRPC client built to demonstrate real-time Server-side Streaming tied to database updates
+
+## How to Run the Project
+
+### 1. Prerequisites
+* Go 1.25.5
+* PostgreSQL running locally
+
+### 2. Environment Configuration
+Create `.env` files in both `order-service` and `payment-service` to manage ports and database DSNs securely 
+
+### 3. Start Payment Service (gRPC Server)
+cd payment-service
+go mod tidy
+go run main.go
+
+### 4.Start Order Service (REST + gRPC Streaming Server)
+cd order-service
+go mod tidy
+go run main.go
+
+
+### 5. Run Streaming Client
+Bash
+cd test-client
+go run main.go
+
+Evidences
+<img width="1218" height="127" alt="image" src="https://github.com/user-attachments/assets/3c9d4249-7601-4643-8959-52183117c197" />
+Before: 
+<img width="1140" height="84" alt="image" src="https://github.com/user-attachments/assets/f5640c2b-c382-4409-91a4-e66f352780b4" />
+<img width="1099" height="519" alt="image" src="https://github.com/user-attachments/assets/d02070a6-7924-4884-ba6c-008bdc80d8d6" />
+
+After: 
+<img width="1196" height="111" alt="image" src="https://github.com/user-attachments/assets/10450b8f-1049-4cb0-ad07-3862821dcb04" />
+
