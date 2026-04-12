@@ -1,0 +1,15 @@
+1. Create Order (Success):
+curl -X POST http://localhost:8080/orders -H "Content-Type: application/json" -d '{"customer_id": "user1", "item_name": "Laptop", "amount": 50000}'
+
+2. Create Order Declined by limit > 1000 units:
+curl -X POST http://localhost:8080/orders -H "Content-Type: application/json" -d '{"customer_id": "user1", "item_name": "Car", "amount": 150000}'
+
+3. Get Order Details:
+curl -X GET http://localhost:8080/orders/{ORDER_ID}
+
+4. Cancel Pending Order:
+curl -X PATCH http://localhost:8080/orders/{ORDER_ID}/cancel
+
+PAYMENT SERVICE (PORT 8081)
+5. Get Payment Status:
+curl -X GET http://localhost:8081/payments/{ORDER_ID}
