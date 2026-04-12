@@ -1,27 +1,53 @@
 package main
 
 import (
+	"context"
 	"database/sql"
-	"github.com/gin-gonic/gin"
+	"log"
+	"net"
+	"os"
+	"time"
+
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"google.golang.org/grpc"
+
 	"payment-service/internal/repository"
-	"payment-service/internal/transport/http"
+	grpcTransport "payment-service/internal/transport/grpc"
 	"payment-service/internal/usecase"
+
+	pb "github.com/Adilbek2006/grpc-generated/proto"
 )
 
+func LoggingInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	start := time.Now()
+	log.Printf("gRPC query : %s", info.FullMethod)
+	resp, err := handler(ctx, req)
+	log.Printf("Method: %s is completed by %s", info.FullMethod, time.Since(start))
+	return resp, err
+}
+
 func main() {
-	db, err := sql.Open("postgres", "postgres://postgres:Adiktop4ik@localhost:5432/payment_db?sslmode=disable")
+	_ = godotenv.Load()
+
+	db, err := sql.Open("postgres", os.Getenv("DB_DSN"))
 	if err != nil {
 		panic(err)
 	}
 
 	repo := &repository.PostgresRepo{DB: db}
 	uc := &usecase.PaymentUseCase{Repo: repo}
-	handler := &http.PaymentHandler{UC: uc}
+	handler := &grpcTransport.PaymentHandler{UC: uc}
 
-	r := gin.Default()
-	r.POST("/payments", handler.HandleAuthorize)
-	r.GET("/payments/:order_id", handler.HandleGetStatus)
+	port := os.Getenv("GRPC_PORT")
+	lis, err := net.Listen("tcp", ":"+port)
+	if err != nil {
+		log.Fatalf("Network error: %v", err)
+	}
 
-	r.Run(":8081")
+	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(LoggingInterceptor))
+	pb.RegisterPaymentServiceServer(grpcServer, handler)
+
+	log.Printf("Payment gRPC server started on port %s", port)
+	grpcServer.Serve(lis)
 }
