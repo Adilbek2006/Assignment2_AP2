@@ -2,8 +2,9 @@ package usecase
 
 import (
 	"errors"
-	"github.com/google/uuid"
 	"payment-service/internal/domain"
+
+	"github.com/google/uuid"
 )
 
 type PaymentUseCase struct {
@@ -37,4 +38,7 @@ func (uc *PaymentUseCase) Process(orderID string, amount int64) (*domain.Payment
 
 func (uc *PaymentUseCase) GetStatus(orderID string) (*domain.Payment, error) {
 	return uc.Repo.GetByOrderID(orderID)
+}
+func (uc *PaymentUseCase) GetPaymentsByStatus(status string) ([]*domain.Payment, error) {
+	return uc.Repo.ListByStatus(status)
 }

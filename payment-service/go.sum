@@ -1,5 +1,5 @@
-github.com/Adilbek2006/grpc-generated v0.0.0-20260412082913-e1775c684a11 h1:HxVgSLbYp3SjdpVJZgVw1OGM6Z0k1GwIoQI8c6oy3c4=
-github.com/Adilbek2006/grpc-generated v0.0.0-20260412082913-e1775c684a11/go.mod h1:/jzqRf40B65eRG1fcXfAEKeQGIekQBzP/Kg7moGYvLo=
+github.com/Adilbek2006/grpc-generated v0.0.0-20260415120249-40e57e613805 h1:iUFngbTWVVaWW0S7/JtawrTijf1CBYeNkRkay9+lDQs=
+github.com/Adilbek2006/grpc-generated v0.0.0-20260415120249-40e57e613805/go.mod h1:/jzqRf40B65eRG1fcXfAEKeQGIekQBzP/Kg7moGYvLo=
 github.com/bytedance/gopkg v0.1.3 h1:TPBSwH8RsouGCBcMBktLt1AymVo2TVsBVCY4b6TnZ/M=
 github.com/bytedance/gopkg v0.1.3/go.mod h1:576VvJ+eJgyCzdjS+c4+77QF3p7ubbtiKARP3TxducM=
 github.com/bytedance/sonic v1.15.0 h1:/PXeWFaR5ElNcVE84U0dOHjiMHQOwNIx3K4ymzh/uSE=

@@ -3,7 +3,7 @@ module payment-service
 go 1.25.5
 
 require (
-	github.com/Adilbek2006/grpc-generated v0.0.0-20260412082913-e1775c684a11
+	github.com/Adilbek2006/grpc-generated v0.0.0-20260415120249-40e57e613805
 	github.com/gin-gonic/gin v1.12.0
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
