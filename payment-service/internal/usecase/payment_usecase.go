@@ -7,8 +7,13 @@ import (
 	"github.com/google/uuid"
 )
 
+type EventPublisher interface {
+	PublishPaymentEvent(payment *domain.Payment) error
+}
+
 type PaymentUseCase struct {
-	Repo domain.PaymentRepository
+	Repo      domain.PaymentRepository
+	Publisher EventPublisher
 }
 
 func (uc *PaymentUseCase) Process(orderID string, amount int64) (*domain.Payment, error) {
@@ -33,9 +38,19 @@ func (uc *PaymentUseCase) Process(orderID string, amount int64) (*domain.Payment
 	}
 
 	err := uc.Repo.Save(p)
+	if err != nil {
+		return nil, err
+	}
+
+	if p.Status == "Authorized" && uc.Publisher != nil {
+		err = uc.Publisher.PublishPaymentEvent(p)
+		if err != nil {
+			println("Failed to publish event:", err.Error())
+		}
+	}
+
 	return p, err
 }
-
 func (uc *PaymentUseCase) GetStatus(orderID string) (*domain.Payment, error) {
 	return uc.Repo.GetByOrderID(orderID)
 }
