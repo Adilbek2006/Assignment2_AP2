@@ -28,6 +28,7 @@ Successful EDA Flow (Producer & Consumer logs in Docker):<img width="1788" heigh
 
 Idempotency handling (Duplicate Ignored):<img width="1793" height="308" alt="image" src="https://github.com/user-attachments/assets/e8f6515a-81b5-47e4-9d97-8c6967c2ca09" />
 
+
 ## How to Run the Project
 * **cd test-client:**
 * **go run main.go:**
@@ -39,4 +40,15 @@ Idempotency handling (Duplicate Ignored):<img width="1793" height="308" alt="ima
 The entire application environment is containerized. Open a terminal in the root directory and run:
 ```bash
 docker-compose up --build
+```
+## Architecture Diagram
+```mermaid
+graph TD
+    Client -->|REST/gRPC| OrderService
+    OrderService -->|gRPC| PaymentService
+    PaymentService -->|Publish payment.completed| RabbitMQ
+    RabbitMQ -->|Consume| NotificationService
+
+
+
 
