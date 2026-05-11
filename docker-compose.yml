@@ -9,12 +9,35 @@ services:
       POSTGRES_DB: payment_db
     ports:
       - "5432:5432"
+    restart: always
 
   rabbitmq:
     image: rabbitmq:3-management
     ports:
       - "5672:5672"
       - "15672:15672"
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: always
+
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    environment:
+      - DB_DSN=postgres://user:password@postgres:5432/payment_db?sslmode=disable
+      - REDIS_ADDR=redis:6379
+      - PAYMENT_GRPC_ADDR=payment-service:50052
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+    restart: always
 
   payment-service:
     build:
@@ -29,6 +52,7 @@ services:
     depends_on:
       - postgres
       - rabbitmq
+    restart: always
 
   notification-service:
     build:
@@ -36,5 +60,13 @@ services:
       dockerfile: Dockerfile
     environment:
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - REDIS_ADDR=redis:6379
+      - PROVIDER_MODE=SIMULATED
     depends_on:
       - rabbitmq
+      - redis
+    restart: always
+
+
+volumes:
+      postgres_data:

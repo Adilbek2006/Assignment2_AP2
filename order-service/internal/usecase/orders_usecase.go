@@ -1,15 +1,21 @@
 package usecase
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
-	"github.com/google/uuid"
-	"order-service/internal/domain"
 	"time"
+
+	"order-service/internal/domain"
+
+	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 )
 
 type OrderUseCase struct {
 	Repo          domain.OrderRepository
 	PaymentClient PaymentClient
+	RedisClient   *redis.Client
 }
 
 func (uc *OrderUseCase) CreateOrder(o *domain.Order) error {
@@ -40,7 +46,11 @@ func (uc *OrderUseCase) CreateOrder(o *domain.Order) error {
 		o.Status = "Failed"
 	}
 
-	return uc.Repo.UpdateStatus(o.ID, o.Status)
+	err = uc.Repo.UpdateStatus(o.ID, o.Status)
+
+	uc.RedisClient.Del(context.Background(), "order:"+o.ID)
+
+	return err
 }
 
 func (uc *OrderUseCase) CancelOrder(id string) error {
@@ -51,11 +61,36 @@ func (uc *OrderUseCase) CancelOrder(id string) error {
 	if o.Status != "Pending" {
 		return errors.New("only Pending orders can be cancelled")
 	}
-	return uc.Repo.UpdateStatus(id, "Cancelled")
+
+	err = uc.Repo.UpdateStatus(id, "Cancelled")
+	if err == nil {
+		uc.RedisClient.Del(context.Background(), "order:"+id)
+	}
+	return err
 }
 
 func (uc *OrderUseCase) GetOrder(id string) (*domain.Order, error) {
-	return uc.Repo.GetByID(id)
+	ctx := context.Background()
+	cacheKey := "order:" + id
+
+	cachedData, err := uc.RedisClient.Get(ctx, cacheKey).Result()
+	if err == nil {
+		var o domain.Order
+		if err := json.Unmarshal([]byte(cachedData), &o); err == nil {
+			return &o, nil
+		}
+	}
+
+	o, err := uc.Repo.GetByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if jsonData, err := json.Marshal(o); err == nil {
+		uc.RedisClient.Set(ctx, cacheKey, jsonData, 5*time.Minute)
+	}
+
+	return o, nil
 }
 
 func (uc *OrderUseCase) GetOrderStats() (*domain.OrderStats, error) {

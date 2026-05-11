@@ -25,7 +25,7 @@ func main() {
 	log.Println("Sending ProcessPayment request to Payment Service")
 
 	res, err := client.ProcessPayment(ctx, &pb.PaymentRequest{
-		OrderId:       "ORDER-999",
+		OrderId:       "ORDER-556",
 		Amount:        5000.0,
 		PaymentMethod: "card",
 	})
